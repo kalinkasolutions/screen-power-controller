@@ -7,15 +7,21 @@ import (
 	"github.com/MarinX/keylogger"
 )
 
-func main() {
-	screenKeyMap := make(map[string]string)
+type ScreenConfig struct {
+	KeyboardKey string
+	Bus         string
+	// sudo ddcutil --dis 1 cap --verbose => search fo Power Mode
+	VcpOffCode  string
+	VcpOffValue string
+}
 
-	// define keys which should turn of a screen paired with alt-left key.
-	// key: keyboard-key
-	// value: monitor bus (use: ddcutil detect)
-	screenKeyMap["F10"] = "5"
-	screenKeyMap["F11"] = "8"
-	screenKeyMap["F12"] = "6"
+func main() {
+
+	config := []ScreenConfig{
+		{KeyboardKey: "F10", Bus: "5", VcpOffCode: "0xd6", VcpOffValue: "0x05"},
+		{KeyboardKey: "F11", Bus: "8", VcpOffCode: "0xd6", VcpOffValue: "0x05"},
+		{KeyboardKey: "F12", Bus: "6", VcpOffCode: "0xd6", VcpOffValue: "0x05"},
+	}
 
 	keyboard := keylogger.FindKeyboardDevice()
 
@@ -48,9 +54,9 @@ func main() {
 				l_altPressed = true
 			}
 
-			for key, bus := range screenKeyMap {
-				if e.KeyPress() && l_altPressed && e.KeyString() == key {
-					cmd := exec.Command("ddcutil", "--bus", bus, "setvcp", "0xd6", "0x05")
+			for _, config := range config {
+				if e.KeyPress() && l_altPressed && e.KeyString() == config.KeyboardKey {
+					cmd := exec.Command("ddcutil", "--bus", config.Bus, "setvcp", config.VcpOffCode, config.VcpOffValue)
 
 					_, err := cmd.CombinedOutput()
 					if err != nil {
