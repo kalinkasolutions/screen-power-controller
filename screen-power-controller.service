@@ -1,0 +1,10 @@
+[Unit]
+Description=Screen controller service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/screen-power-controller
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
